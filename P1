@@ -1,0 +1,197 @@
+- css/
+body {
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+  margin: 0;
+}
+
+.container {
+  text-align: center;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+h1 {
+  font-size: 2em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.intro {
+  font-size: 1.1em;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+label {
+  font-size: 1em;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+input[type="number"] {
+  padding: 10px;
+  width: 80%;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#results p {
+  text-align: left;
+  margin: 10px 0;
+  color: #333;
+}
+
+.description {
+  font-size: 0.9em;
+  color: #777;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9em;
+}
+
+#chartContainer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+- js/
+function calculate() {
+  const percentageInput = parseFloat(document.getElementById('percentageInput').value);
+  const percentageError = document.getElementById('percentageError');
+  percentageError.innerText = '';
+
+  if (isNaN(percentageInput) || percentageInput < 0) {
+    alert('Por favor, introduce un valor válido para el porcentaje de fibras PET.');
+    return;
+  }
+
+  if (percentageInput > 10) {
+    percentageError.innerText = 'No está permitido un valor mayor a 10%.';
+    return;
+  }
+
+  // Convertir el valor entero a decimal
+  const x = percentageInput / 100;
+
+  // Resistencia a la compresión
+  const compressionStrength = 787.34 * x + 282.89;
+  document.getElementById('compressionResult').innerText = `${compressionStrength.toFixed(2)} kg/cm²`;
+
+  // Resistencia a la flexión
+  const flexuralStrength = 189.41 * x + 40.018;
+  document.getElementById('flexionResult').innerText = `${flexuralStrength.toFixed(2)} kg/cm²`;
+
+  // Espesor de la losa
+  const thickness = -47.716 * x + 16.246;
+  document.getElementById('thicknessResult').innerText = `${thickness.toFixed(2)} cm`;
+
+  // Costo por metro lineal
+  const cost = 1864.9 * x + 452.67;
+  document.getElementById('costResult').innerText = `${cost.toFixed(2)} nuevos soles`;
+
+  drawConcreteChart(thickness);
+}
+
+function drawConcreteChart(thickness) {
+  const canvas = document.getElementById('concreteChart');
+  const ctx = canvas.getContext('2d');
+
+  // Limpiar el canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Dibujar la base marrón (20 cm)
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(50, canvas.height - 40, 100, 40);
+
+  // Dibujar la capa de concreto gris con el espesor calculado
+  const concreteHeight = thickness * 10; // Escalar el espesor para que sea visible en el canvas
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(50, canvas.height - 40 - concreteHeight, 100, concreteHeight);
+
+  // Dibujar texto de la base y del concreto
+  ctx.fillStyle = '#000000';
+  ctx.font = '16px Arial';
+  ctx.fillText('Base (20 cm)', 50, canvas.height - 10);
+  ctx.fillText(`Concreto (${thickness.toFixed(2)} cm)`, 50, canvas.height - 50 - concreteHeight);
+}
+
+- index.html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora de Fibras PET</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Fibras PET</h1>
+    <p class="intro">
+      Esta calculadora te ayuda a entender cómo la adición de fibras PET (plástico reciclado) afecta la resistencia y el costo de los materiales de construcción. Solo tienes que introducir el porcentaje de fibras PET que deseas usar en la mezcla.
+    </p>
+    <div class="input-container">
+      <label for="percentageInput">Porcentaje de Fibras PET:</label>
+      <input type="number" id="percentageInput" min="0" max="10" step="0.1" placeholder="Introduce el porcentaje de fibras PET">
+      <span id="percentageError" class="error-message"></span>
+    </div>
+    <button onclick="calculate()">Calcular</button>
+    <div id="results">
+      <p><strong>Resistencia a la compresión:</strong> <span id="compressionResult"></span></p>
+      <p class="description">La resistencia a la compresión mide cuánto puede soportar el material antes de aplastarse.</p>
+      <p><strong>Resistencia a la flexión:</strong> <span id="flexionResult"></span></p>
+      <p class="description">La resistencia a la flexión mide cuánto puede doblarse el material antes de romperse.</p>
+      <p><strong>Espesor de la losa:</strong> <span id="thicknessResult"></span></p>
+      <p class="description">El espesor de la losa es la altura de la capa de material.</p>
+      <p><strong>Costo por metro lineal:</strong> <span id="costResult"></span></p>
+      <p class="description">El costo por metro lineal es el precio para construir un metro de la losa.</p>
+    </div>
+    <div id="chartContainer">
+      <canvas id="concreteChart" width="200" height="400"></canvas>
+    </div>
+    <script src="js/script.js"></script>
+  </div>
+</body>
+</html>
+
